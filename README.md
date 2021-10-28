@@ -1,2 +1,2 @@
 # front-end
-Primeiro projeto do módulo 3.
+Primeiro projeto do módulo 3. (front-end)
