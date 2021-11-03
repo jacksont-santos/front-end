@@ -1,21 +1,147 @@
 alert('Brabo');
 const lista = document.getElementById("lista");
-const chamadaAPI = fetch('http://localhost:3000');
-console.log(chamadaAPI);
-chamadaAPI.then((response)=> {
-    console.log(response);
-    return response.json()
-}) .then((jogosdados)=> {
-    jogosdados.map((jogo)=>{
+const apiUrl = 'http://localhost:3000/jogo';
+console.log(apiUrl);
+var edicao = false;
+
+const getJogos = async ()=> {
+    const resposta = await fetch(apiUrl);
+    const jogos = await resposta.json();
+    console.log(jogos);
+    lista.innerHTML = "";
+    jogos.map((jogo)=> {
         lista.insertAdjacentHTML('beforeend',`
-        <li>
-            <h2>Título: ${jogo.titulo}</h2>
-            <h3>Gênero: ${jogo.genero}</h3>
-            <figure>
-                <img src="${jogo.imagem}" alt="">
-                <figcaption>Avaliação: ${jogo.avaliacao}</figcaption>
-            </figure>
-        </li>
+        <div class="col">
+            <div class="card">
+                <figure>
+                    <img src="${jogo.imagem}" class="card-img-top" alt="...">
+                    <figcaption>Avaliação: ${jogo.avaliacao}</figcaption>
+                </figure>
+                <div class="card-body">
+                    <h5 class="card-title" onclick="getJogo('${jogo.id}')">${jogo.titulo}</h5>
+                    <span class="badge bg-primary">${jogo.genero}</span>
+                    <div>
+                        <button class="btn btn-primary" onclick="editJogo('${jogo.id}')">Editar</button>
+                        <button class="btn btn-danger" onclick="deleteJogo('${jogo.id}')">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         `)
     })
-});
+};
+getJogos();
+
+let titulo = document.getElementById("titulo");
+let genero = document.getElementById("genero");
+let imagem = document.getElementById("imagem");
+let nota = document.getElementById("nota");
+let idR;
+
+const clearFields= () => {
+    titulo.value = "";
+    genero.value = "";
+    imagem.value = "";
+    nota.value = "";
+    idR = "";
+};
+
+const getJogo = async (id) => {
+    const resposta = await fetch(`${apiUrl}/${id}`);
+    const jogo = await resposta.json();
+    lista.innerHTML = '';
+    lista.insertAdjacentHTML('beforeend',`
+        <div class="col">
+            <div class="card">
+                <figure>
+                    <img src="${jogo.imagem}" class="card-img-top" alt="...">
+                    <figcaption>Avaliação: ${jogo.avaliacao}</figcaption>
+                </figure>
+                <div class="card-body">
+                    <h5 class="card-title">${jogo.titulo}</h5>
+                    <span class="badge bg-primary">${jogo.genero}</span>
+                    <div>
+                        <button class="btn btn-primary" onclick="editJogo('${jogo.id}')">Editar</button>
+                        <button class="btn btn-danger" onclick="deleteJogo('${jogo.id}')">Excluir</button>
+                    </div>
+                </div>
+             </div>
+        </div>
+    `)
+
+};
+
+const submitForm = async (event) => {
+    event.preventDefault();
+    const jogo = {
+        titulo: titulo.value,
+        genero: genero.value,
+        capa: imagem.value,
+        avaliacao: nota.value
+    };
+    
+    if(edicao) {
+        putJogo(jogo, idR);
+    } else {
+        createJogo(jogo);
+    }
+
+    clearFields();
+    lista.innerHTML = '';
+};
+
+const createJogo = async (jogo)=> {
+    const request = new Request(`${apiUrl}/add`, {
+        method: 'POST',
+        body: JSON.stringify(jogo),
+        headers: new Headers({
+            'Content-Type' : 'application/json'
+        })
+    });
+    const response = await fetch(request);
+    const result = await response.json();
+    clearFields();
+    alert(result.message);
+    getJogos();
+};
+
+const getJogoById = async (id) => {
+    const response = await fetch(`${apiUrl}/${id}`);
+    return await response.json();
+};
+const editJogo = async (id) => {
+    edicao = true;
+    const jogoUpdate = await getJogoById(id);
+    idR = id;
+    titulo.value = jogoUpdate.titulo;
+    genero.value = jogoUpdate.genero;
+    imagem.value = jogoUpdate.imagem;
+    nota.value = jogoUpdate.avaliacao
+};
+
+const putJogo = async (jogo, id)=> {
+    const Update = new Request(`${apiUrl}/${id}`, {
+        method: 'Put',
+        body: JSON.stringify(jogo),
+        headers: new Headers({
+            'Content-Type' : 'application/json'
+        })
+    });
+    const response = await fetch(Update);
+    const result = await response.json();
+    clearFields();
+    edicao = false;
+    alert(result.message);
+    getJogos();
+};
+
+const deleteJogo = async (id) => {
+    const request = new Request(`${apiUrl}/delete/${id}`, {
+        method: 'DELETE'
+    })
+
+    const response = await fetch(request);
+    const result = await response.json();
+    alert(result.message);
+    getJogos();
+};
