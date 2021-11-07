@@ -1,4 +1,3 @@
-alert('Brabo');
 const lista = document.getElementById("lista");
 const apiUrl = 'http://localhost:3000/jogo';
 console.log(apiUrl);
@@ -13,17 +12,18 @@ const getJogos = async ()=> {
         lista.insertAdjacentHTML('beforeend',`
         <div class="col">
             <div class="card">
-                <figure>
-                    <img src="${jogo.imagem}" class="card-img-top" alt="...">
-                    <figcaption>Avaliação: ${jogo.avaliacao}</figcaption>
-                </figure>
-                <div class="card-body">
-                    <h5 class="card-title" onclick="getJogo('${jogo.id}')">${jogo.titulo}</h5>
-                    <span class="badge bg-primary">${jogo.genero}</span>
-                    <div>
-                        <button class="btn btn-primary" onclick="editJogo('${jogo.id}')">Editar</button>
-                        <button class="btn btn-danger" onclick="deleteJogo('${jogo.id}')">Excluir</button>
-                    </div>
+             <figure>
+                <img src="${jogo.imagem}" class="card-img-top" alt="...">
+                <span class="badge bg-dark">
+                    <figcaption>Avaliação: <h4>${jogo.avaliacao}</h4></figcaption>
+                </span>
+            </figure>
+            <div class="card-body">
+                <h5 class="card-title"><strong>${jogo.titulo}</strong></h5>
+                <span class="badge bg-dark">${jogo.genero}</span>
+                <div>
+                    <button class="btn btn-primary" onclick="editJogo('${jogo.id}')">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteJogo('${jogo.id}')">Excluir</button>
                 </div>
             </div>
         </div>
@@ -46,37 +46,12 @@ const clearFields= () => {
     idR = "";
 };
 
-const getJogo = async (id) => {
-    const resposta = await fetch(`${apiUrl}/${id}`);
-    const jogo = await resposta.json();
-    lista.innerHTML = '';
-    lista.insertAdjacentHTML('beforeend',`
-        <div class="col">
-            <div class="card">
-                <figure>
-                    <img src="${jogo.imagem}" class="card-img-top" alt="...">
-                    <figcaption>Avaliação: ${jogo.avaliacao}</figcaption>
-                </figure>
-                <div class="card-body">
-                    <h5 class="card-title">${jogo.titulo}</h5>
-                    <span class="badge bg-primary">${jogo.genero}</span>
-                    <div>
-                        <button class="btn btn-primary" onclick="editJogo('${jogo.id}')">Editar</button>
-                        <button class="btn btn-danger" onclick="deleteJogo('${jogo.id}')">Excluir</button>
-                    </div>
-                </div>
-             </div>
-        </div>
-    `)
-
-};
-
 const submitForm = async (event) => {
     event.preventDefault();
     const jogo = {
         titulo: titulo.value,
         genero: genero.value,
-        capa: imagem.value,
+        imagem: imagem.value,
         avaliacao: nota.value
     };
     
@@ -84,7 +59,7 @@ const submitForm = async (event) => {
         putJogo(jogo, idR);
     } else {
         createJogo(jogo);
-    }
+    };
 
     clearFields();
     lista.innerHTML = '';
@@ -138,8 +113,7 @@ const putJogo = async (jogo, id)=> {
 const deleteJogo = async (id) => {
     const request = new Request(`${apiUrl}/delete/${id}`, {
         method: 'DELETE'
-    })
-
+    });
     const response = await fetch(request);
     const result = await response.json();
     alert(result.message);
